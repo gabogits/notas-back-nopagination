@@ -4,11 +4,11 @@ const router = express.Router();
 //importar el modelo nota
 import Nota from '../models/nota';
 
-const {verificarAuth, verificarAdministador} = require('../middlewares/autenticacion')
+const { verificarAuth, verificarAdministador } = require('../middlewares/autenticacion')
 
 //Agregar una nota
 
-router.post('/nueva-nota', verificarAuth,  async (req, res) => {
+router.post('/nueva-nota', verificarAuth, async (req, res) => {
   //req, res para procesar todo lo que venga de este post
   //req va tener toda la solicitud que nosotros enviemos, del formulario con toda informacion de una nueva nota, enviamos datos, esos datos los recibe req
   const body = req.body;
@@ -46,11 +46,36 @@ router.get('/nota/:id', async (req, res) => {
 });
 //Exoportacion de router
 
+//router.get('/nota', verificarAuth, async (req, res) => {
+//  const usuarioId = req.usuario._id;
+//  try {
+//    const notaDB = await Nota.find({ usuarioId });
+//    res.json(notaDB);
+//
+//  } catch (error) {
+//    return res.status(400).json({
+//      mensaje: 'Ocurrio un error',
+//      error
+//    });
+//  }
+//});
+
+
+//get conn paginacion
+
+
 router.get('/nota', verificarAuth, async (req, res) => {
   const usuarioId = req.usuario._id;
+  const limite = Number(req.query.limite) || 5;
+  const skip = Number(req.query.skip) || 0;
+
+  //contar documento
+
+  const totalNotas = await Nota.find({ usuarioId }).countDocuments();
+
   try {
-    const notaDB = await Nota.find({usuarioId});
-    res.json(notaDB);
+    const notaDB = await Nota.find({ usuarioId }).limit(limite).skip(skip);
+    res.json({ notaDB, totalNotas });
 
   } catch (error) {
     return res.status(400).json({
@@ -104,6 +129,8 @@ router.put('/nota/:id', async (req, res) => {
     });
   }
 });
+
+
 
 
 module.exports = router;
